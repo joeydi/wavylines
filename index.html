@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="em">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>Wavy Lines | Simple Creature</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <style>
+            body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100vw;
+                height: 100vh;
+                margin: 0;
+                padding: 0;
+
+                /*background-image: linear-gradient(to bottom, #FFC371, #FF5F6D); // orangy sunset*/
+                /*background-image: linear-gradient(to bottom, #dc21a5, #0138ef); // blue to purple*/
+                /*background-image: linear-gradient(to bottom, #3efccd, #055dc5); // teal to blue*/
+                background-image: linear-gradient(to bottom, #3efccd, #055dc5); // teal to dark blue
+                /*background-image: linear-gradient(to bottom, #1B245E, #000330); // dark blues*/
+                /*background-image: linear-gradient(to bottom, #FFFFFF, #D5A2DD); // lavender 1*/
+                /*background-image: linear-gradient(to bottom, #F9E7FB, #b17fb9); // lavender 2*/
+                /*background-image: linear-gradient(to bottom, #fef1ec, #c9837b); // light oranges*/
+                /*background-image: linear-gradient(to bottom, #fcc935, #ea6d1f); // bright oranges*/
+                /*background-image: linear-gradient(to bottom, #f99170, #506887); // light teals*/
+                /*background-image: linear-gradient(to bottom, #f99170, #861309); // orangies*/
+                /*background-image: linear-gradient(to bottom, #fcd0ad, #fa6d4b); // other oranges*/
+
+                overflow: hidden;
+            }
+
+            .bg-1 { background-image: linear-gradient(to bottom, #FFC371, #FF5F6D); } /* orangy sunset*/
+            .bg-2 { background-image: linear-gradient(to bottom, #dc21a5, #0138ef); } /* blue to purple*/
+            .bg-3 { background-image: linear-gradient(to bottom, #3efccd, #055dc5); } /* teal to blue*/
+            .bg-4 { background-image: linear-gradient(to bottom, #3efccd, #055dc5); } /* teal to dark blue*/
+            .bg-5 { background-image: linear-gradient(to bottom, #1B245E, #000330); } /* dark blues*/
+            .bg-6 { background-image: linear-gradient(to bottom, #FFFFFF, #D5A2DD); } /* lavender 1*/
+            .bg-7 { background-image: linear-gradient(to bottom, #F9E7FB, #b17fb9); } /* lavender 2*/
+            .bg-8 { background-image: linear-gradient(to bottom, #fef1ec, #c9837b); } /* light oranges*/
+            .bg-9 { background-image: linear-gradient(to bottom, #fcc935, #ea6d1f); } /* bright oranges*/
+            .bg-10 { background-image: linear-gradient(to bottom, #f99170, #506887); } /* light teals*/
+            .bg-11 { background-image: linear-gradient(to bottom, #f99170, #861309); } /* orangies*/
+            .bg-12 { background-image: linear-gradient(to bottom, #fcd0ad, #fa6d4b); } /* other oranges*/
+
+            #waves {
+                width: 100vw;
+                height: 100vh;
+            }
+
+            #waves svg {
+                overflow: visible !important;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="waves"></div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.0.2/TweenMax.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/two.js/0.6.0/two.min.js"></script>
+        <script>
+            function convertRange(value, r1, r2) {
+                return ( value - r1[ 0 ] ) * ( r2[ 1 ] - r2[ 0 ] ) / ( r1[ 1 ] - r1[ 0 ] ) + r2[ 0 ];
+            }
+
+            function getRandom(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            function getRandomInt(min, max) {
+                min = Math.ceil(min);
+                max = Math.floor(max);
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            var $ = $ || jQuery,
+                SC = SC || {};
+
+            SC.init_pattern_animation = function () {
+                var container = $('#waves'),
+                    canvasWidth = container.width(),
+                    canvasHeight = container.height(),
+                    path1,
+                    path2,
+                    points1 = [],
+                    points2 = [],
+                    pointCount = 5,
+                    pathCount = 120,
+                    xOffset = 100,
+                    minDuration = 2,
+                    maxDuration = 5,
+                    intermediatePaths = [];
+
+                // var stroke = '104, 17, 62'; // maroon
+                // var stroke = '252, 192, 95'; // light orange
+                // var stroke = '255, 253, 237'; // lavender
+                var stroke = '247, 77, 95'; // salmon
+                // var stroke = '73, 78, 129'; // light purple
+                // var stroke = '24, 49, 189'; // bright blue
+                // var stroke = '15, 21, 96'; // dark blue
+                // var stroke = '253, 204, 172'; // peach
+                // var stroke = '43, 53, 72'; // purply blue
+                // var stroke = '104, 17, 62';
+                // var stroke = '255, 255, 255';
+
+                if (!container.length) {
+                    return;
+                }
+
+                var elem = document.getElementById('waves');
+                var two = new Two({ width: canvasWidth, height: canvasHeight, type: Two.Types.canvas }).appendTo(elem);
+
+                $(window).on('resize', function () {
+                    canvasWidth = container.width();
+                    canvasHeight = container.height();
+                    two.renderer.setSize(canvasWidth, canvasHeight);
+                });
+
+                // Create an array with the location of each point
+                for (var i=0; i<pointCount; i++) {
+                    var x1 = convertRange(i, [0, pointCount - 1], [-xOffset, canvasWidth + xOffset]),
+                        y1 = getRandomInt(-canvasHeight/2, canvasHeight*1.5),
+                        anchor1 = new Two.Anchor(x1, y1),
+                        x2 = convertRange(i, [0, pointCount - 1], [-xOffset, canvasWidth + xOffset]),
+                        y2 = getRandomInt(-canvasHeight/2, canvasHeight*1.5),
+                        anchor2 = new Two.Anchor(x2, y2);
+
+                    points1.push(anchor1);
+                    points2.push(anchor2);
+                }
+
+                // Draw the control lines
+                path1 = two.makeCurve(points1, true);
+                path1.noFill();
+                path1.noStroke();
+
+                path2 = two.makeCurve(points2, true);
+                path2.noFill();
+                path2.noStroke();
+
+                // Draw the intermediate lines
+                for (i=0; i<pathCount; i++) {
+                    var vertices = [];
+
+                    for (var j=0; j<pointCount; j++) {
+                        var x = path1.vertices[j].x + (canvasWidth / 2),
+                            y = path1.vertices[j].y + (canvasHeight / 2),
+                            anchor = new Two.Anchor(x, y);
+
+                        vertices.push(anchor);
+                    }
+
+                    var path = two.makeCurve(vertices, true),
+                        opacity = convertRange(i, [0, pathCount - 1], [0, 0.5]);
+                    // path.noFill();
+                    // path.noStroke();
+                    path.fill = 'rgba(15, 21, 96,0.025)';
+                    // path.fill = 'rgba(24, 49, 189,0.015)';
+                    // path.fill = 'rgba(62,252,205,0.025)';
+                    // path.fill = 'rgba(0,0,0,0.015)';
+                    path.stroke = 'rgba('+stroke+','+opacity+')';
+                    path.linewidth = 2;
+
+                    intermediatePaths.push(path);
+                }
+
+                function updatePosition(i, anchor) {
+                    TweenMax.to(anchor, getRandom(minDuration, maxDuration), {
+                        y: getRandomInt(-canvasHeight/2, canvasHeight*1.5) - (canvasHeight / 2),
+                        x: convertRange(i, [0, pointCount - 1], [-xOffset, canvasWidth + xOffset]) + getRandomInt(-xOffset, xOffset) - (canvasWidth / 2),
+                        ease: Power2.easeInOut,
+                        onComplete: function () {
+                            updatePosition(i, anchor);
+                        }
+                    });
+                }
+
+                // Tween the location of each point in a loop
+                for (i=0; i<pointCount; i++) {
+                    updatePosition(i, path1.vertices[i]);
+                    updatePosition(i, path2.vertices[i]);
+                }
+
+                var classes = ['bg-1', 'bg-2', 'bg-3', 'bg-4', 'bg-5', 'bg-6', 'bg-7', 'bg-8', 'bg-9', 'bg-10', 'bg-11', 'bg-12'],
+                    strokes = [
+                        '104, 17, 62',
+                        '252, 192, 95',
+                        '255, 253, 237',
+                        '247, 77, 95',
+                        '73, 78, 129',
+                        '24, 49, 189',
+                        '15, 21, 96',
+                        '253, 204, 172',
+                        '43, 53, 72',
+                        '104, 17, 62',
+                        '255, 255, 255',
+                    ],
+                    fills = [
+                        '104, 17, 62',
+                        '15, 21, 96',
+                        '255, 253, 237',
+                        '252, 192, 95',
+                        '104, 17, 62',
+                        '253, 204, 172',
+                        '247, 77, 95',
+                        '24, 49, 189',
+                        '43, 53, 72',
+                        '73, 78, 129',
+                    ],
+                    classIndex = 0;
+
+                $('body').click(function () {
+                    $('body').attr('class', classes[classIndex % classes.length]);
+                    stroke = strokes[classIndex % strokes.length];
+                    fill = fills[classIndex % fills.length];
+
+                    for (i=0; i<pathCount; i++) {
+                        var path = intermediatePaths[i],
+                            opacity = convertRange(i, [0, pathCount - 1], [0, 0.5]);
+                        path.stroke = 'rgba('+stroke+','+opacity+')';
+                        path.fill = 'rgba('+fill+',0.025)';
+                    }
+
+                    classIndex += 1;
+                });
+
+                two.bind('update', function() {
+                    var i, j, x, y, path;
+
+                    // Update each of the intermediate paths
+                    for (i=0; i<pathCount; i++) {
+                        path = intermediatePaths[i];
+
+                        for (j=0; j<path.vertices.length; j++) {
+                            x = convertRange(i, [0, pathCount - 1], [path1.vertices[j].x, path2.vertices[j].x]);
+                            y = convertRange(i, [0, pathCount - 1], [path1.vertices[j].y, path2.vertices[j].y]);
+                            path.vertices[j].x = x;
+                            path.vertices[j].y = y;
+                        }
+                    }
+                }).play();
+            };
+
+            $(document).ready(function () {
+                SC.init_pattern_animation();
+            });
+        </script>
+    </body>
+</html>
